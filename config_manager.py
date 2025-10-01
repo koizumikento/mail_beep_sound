@@ -24,7 +24,7 @@ class ConfigManager:
             self.config['Monitor'] = {
                 'check_interval': '60',
                 'time_window_minutes': '2',
-                'sender_filter': '',
+                'sender_filter': 'no-reply@soracom.io',
                 'keyword_filter': ''
             }
             self.config['Sound'] = {
