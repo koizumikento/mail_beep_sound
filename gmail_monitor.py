@@ -89,17 +89,31 @@ class GmailMonitor:
             keyword_filter = self.config_manager.get('Monitor', 'keyword_filter').strip()
             logger.info(f"フィルター条件 - 送信者: '{sender_filter}', キーワード: '{keyword_filter}'")
             
+            # 全メールを一括ダウンロード（通信は1回だけ）
+            mail_ids_str = b','.join(mail_ids).decode('ascii')
+            logger.info(f"メールを一括ダウンロード中: {len(mail_ids)}件")
+            status, msg_data = self.imap.fetch(mail_ids_str, '(RFC822)')
+            if status != 'OK':
+                logger.warning("メールの一括取得に失敗しました")
+                return False
+            
+            # 取得したメールデータをパース
+            # msg_dataはタプルのリストで、メッセージデータはbytes型の大きなデータとして含まれる
+            mail_messages = []
+            for item in msg_data:
+                if isinstance(item, tuple) and len(item) >= 2:
+                    # 2番目の要素がメッセージデータ（bytes型で大きなサイズ）
+                    if isinstance(item[1], bytes) and len(item[1]) > 100:
+                        mail_messages.append(item[1])
+            
+            logger.info(f"ダウンロード完了: {len(mail_messages)}件のメールデータを取得")
+            
             # 各メールをチェック
-            for i, mail_id in enumerate(mail_ids, 1):
-                logger.info(f"メール {i}/{len(mail_ids)} をチェック中")
-                
-                status, msg_data = self.imap.fetch(mail_id, '(RFC822)')
-                if status != 'OK':
-                    logger.warning(f"メール {i} の取得に失敗")
-                    continue
+            for i, msg_bytes in enumerate(mail_messages, 1):
+                logger.info(f"メール {i}/{len(mail_messages)} をチェック中")
                 
                 # メールをパース
-                msg = email.message_from_bytes(msg_data[0][1])
+                msg = email.message_from_bytes(msg_bytes)
                 
                 # 受信時刻をチェック
                 date_header = msg.get('Date', '')
