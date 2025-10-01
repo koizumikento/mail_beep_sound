@@ -1,0 +1,48 @@
+config.ini
+# Python用 .gitignore 例
+
+# __pycache__ ディレクトリ
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 仮想環境
+venv/
+env/
+.venv/
+.env/
+
+# テスト出力
+htmlcov/
+.tox/
+.nox/
+.coverage
+coverage.xml
+*.cover
+.cache
+.pytest_cache/
+
+# IDE/エディタ
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# OSファイル
+.DS_Store
+Thumbs.db
+
+# ログ・一時ファイル
+*.log
+*.tmp
+
+# ビルド/配布
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+*.spec
+
+# Jupyter Notebook チェックポイント
+.ipynb_checkpoints/
