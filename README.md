@@ -52,30 +52,44 @@ pip install numpy simpleaudio
 
 ### 3. アプリの起動
 
-#### GUI
+#### GUIモード（デフォルト）
 
 ```bash
 # uvを使用している場合
 uv run python main.py
 
-# 通常のPython実行
-python main.py
-
-# インストール後のコマンド（uv sync後）
-uv run mail-beep-gui
-```
-
-#### CLI
-
-```bash
-# uvを使用している場合（デフォルト設定で起動）
-uv run python cli.py
+# または明示的にGUIモードを指定
+uv run python main.py gui
 
 # インストール後のコマンド（uv sync後）
 uv run mail-beep
+uv run mail-beep gui
+```
 
-# ヘルプを表示
+#### CLIモード
+
+```bash
+# uvを使用している場合
+uv run python main.py cli
+
+# インストール後のコマンド（uv sync後）
+uv run mail-beep cli
+
+# CLIモードで追加オプションを指定
+uv run mail-beep cli --config /path/to/config.ini --debug
+
+# CLIモードのヘルプを表示
+uv run mail-beep cli --help
+```
+
+#### ヘルプの表示
+
+```bash
+# 全体のヘルプ
 uv run mail-beep --help
+
+# CLIモードのヘルプ
+uv run mail-beep cli --help
 ```
 
 ### 4. 初回設定
@@ -102,31 +116,31 @@ CLIモードでは2つの方法で設定できます：
 
 ```bash
 # 最初にGUIモードで設定を作成するか、手動でconfig.iniを作成
-uv run mail-beep --config config.ini
+uv run mail-beep cli --config config.ini
 ```
 
 ##### 方法2: コマンドライン引数で指定
 
 ```bash
 # 基本的な使い方
-uv run mail-beep \
+uv run mail-beep cli \
   --email your-email@gmail.com \
   --password 'your-app-password' \
   --interval 60 \
   --time-window 2
 
 # フィルターを追加
-uv run mail-beep \
+uv run mail-beep cli \
   --email your-email@gmail.com \
   --password 'your-app-password' \
   --sender-filter 'example@example.com' \
   --keyword-filter '重要'
 
 # デバッグモードで実行
-uv run mail-beep --debug
+uv run mail-beep cli --debug
 
 # 一度だけチェック（テスト用）
-uv run mail-beep --once
+uv run mail-beep cli --once
 ```
 
 ## 使用方法
@@ -157,7 +171,8 @@ uv run mail-beep --once
 #### コマンドライン引数
 
 ```bash
-uv run mail-beep --help
+# CLIモードのヘルプを表示
+uv run mail-beep cli --help
 ```
 
 利用可能なオプション：
@@ -189,7 +204,7 @@ uv run mail-beep --help
 
 ```bash
 # 通常実行
-uv run mail-beep
+uv run mail-beep cli
 
 # 監視が開始されます...
 # 停止するには Enter キーを押すだけ！
@@ -199,7 +214,7 @@ uv run mail-beep
 
 ```bash
 # バックグラウンドで実行
-uv run mail-beep > mail-beep.log 2>&1 &
+uv run mail-beep cli > mail-beep.log 2>&1 &
 
 # ジョブ番号を確認
 jobs
@@ -216,7 +231,7 @@ pkill -f "mail-beep"
 
 ```bash
 # nohupで実行
-nohup uv run mail-beep > mail-beep.log 2>&1 &
+nohup uv run mail-beep cli > mail-beep.log 2>&1 &
 
 # プロセスIDを確認
 ps aux | grep mail-beep
@@ -242,7 +257,7 @@ After=network.target
 Type=simple
 User=yourusername
 WorkingDirectory=/path/to/mail_beep_sound
-ExecStart=/usr/bin/uv run mail-beep
+ExecStart=/usr/bin/uv run mail-beep cli
 Restart=always
 StandardOutput=append:/var/log/mail-beep.log
 StandardError=append:/var/log/mail-beep.log
@@ -276,6 +291,7 @@ sudo systemctl stop mail-beep
         <string>/path/to/uv</string>
         <string>run</string>
         <string>mail-beep</string>
+        <string>cli</string>
     </array>
     <key>WorkingDirectory</key>
     <string>/Users/yourusername/workspace/mail_beep_sound</string>
@@ -387,8 +403,8 @@ beep_duration = 10
 
 ```bash
 mail_beep_sound/
-├── main.py              # GUIアプリケーションのエントリーポイント
-├── cli.py               # CLIアプリケーションのエントリーポイント
+├── main.py              # 統一されたエントリーポイント（GUI/CLI切り替え）
+├── cli.py               # CLI機能の実装
 ├── config_manager.py    # 設定ファイル管理
 ├── gmail_monitor.py     # Gmail監視機能
 ├── utils.py             # ユーティリティ関数（ロギング、警告音生成）

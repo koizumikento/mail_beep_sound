@@ -1,3 +1,7 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "mail-beep-sound"
 version = "0.1.0"
@@ -10,8 +14,16 @@ dependencies = [
 ]
 
 [project.scripts]
-mail-beep = "cli:main"
-mail-beep-gui = "main:main"
+mail-beep = "main:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+exclude = [
+    ".git",
+    ".venv",
+    "__pycache__",
+    "*.pyc",
+]
 
 [dependency-groups]
 dev = [
