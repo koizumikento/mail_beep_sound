@@ -1,13 +1,17 @@
 [project]
 name = "mail-beep-sound"
 version = "0.1.0"
-description = "Add your description here"
+description = "Gmail monitoring app with beep notification"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "numpy>=2.3.3",
     "simpleaudio>=1.0.4",
 ]
+
+[project.scripts]
+mail-beep = "cli:main"
+mail-beep-gui = "main:main"
 
 [dependency-groups]
 dev = [
