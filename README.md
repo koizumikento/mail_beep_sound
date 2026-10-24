@@ -17,12 +17,39 @@ imaplibとTkinterを使用した、Gmailの未読メール監視アプリケー�
 
 ## 必要要件
 
-- Python 3.11以上
+- Python 3.11.17以上（開発用の選択は `.python-version` の3.11.17）
 - Gmailアカウント
 - Googleアカウントの2段階認証とアプリパスワード
 - 外部ライブラリ:
   - numpy (音声波形生成用)
   - simpleaudio (音声再生用)
+
+### Python・配布環境のセキュリティ更新（2026-10-24）
+
+Python 3.11系の基準は、[公式セキュリティ版3.11.17](https://www.python.org/downloads/release/python-31117/)です。3.11系は2027年10月までセキュリティ修正のみ提供され、python.orgの新しいバイナリインストーラーはありません。OS・Python配布元が提供する更新済みビルド、または更新済みのuvが提供するビルドを使用してください。別のPython minorを使う場合も、その系列の最新セキュリティ版を確認してください。
+
+既存の仮想環境は古いPythonを使い続けることがあります。監視を停止し、uvを配布元の手順で更新してから、次のように環境を作り直してください。これはメールへの接続を行いません。
+
+```bash
+uv python install 3.11.17
+uv venv --clear --python 3.11.17 .venv
+uv sync --locked
+uv run --no-sync python -c "import sys, ssl; print(sys.version); print(ssl.OPENSSL_VERSION); print(ssl.get_default_verify_paths())"
+```
+
+`uv venv --clear` は既存の `.venv` を削除して再作成します。独自に追加した依存関係がある場合は先に記録してください。`requires-python` とロックファイルはPython自体・OpenSSL・OSのCAストアを更新しません。
+
+[2026年10月のPython公式案内](https://blog.python.org/2026/10/python-3151-3149-31317/)に従い、既存環境のpip・uvも更新してください。pipを使用する環境では、同案内のハッシュ付きwheelでpipを更新できます。
+
+```bash
+python -m pip install "pip @ https://files.pythonhosted.org/packages/3f/06/3e4420302363fbb71be3c7f35ce042f54bfca330e3e66b3a2e3c4cca579f/pip-26.2.2-py3-none-any.whl#sha256=fd7f4dfa8190e014013b9f08f3e973f4e4c26ffd179a204895533a7254813a70"
+```
+
+- **CA証明書**: [certifiのemSignアドバイザリ](https://github.com/certifi/python-certifi/security/advisories/GHSA-6q48-6c7w-9gw2)と上記Python公式案内を確認してください。このアプリの依存関係・`uv.lock` にcertifiはありません。既にcertifiを使うインストーラーや別環境では `certifi>=2026.10.19` を確認し、pipに同梱されたcertifiもpipごと更新してください。アプリへのcertifi追加だけでは、標準ライブラリのIMAP接続には適用されません。
+- **OS・Python配布元**: OpenSSLと信頼するCA証明書の更新も別途必要です。macOSのpython.org配布版で `Install Certificates.command` を利用する場合も、pip・certifiとスクリプトが参照するCAを更新してください。OSのCAストアや独自のCA設定にも同じ更新確認が必要です。
+- **IMAPの残るリスク**: 現在は `imaplib.IMAP4_SSL` にSSLコンテキストを渡していません。[CPython 3.11の実装](https://github.com/python/cpython/blob/v3.11.17/Lib/imaplib.py)は、この場合に[証明書・ホスト名検証を無効にしたコンテキスト](https://github.com/python/cpython/blob/v3.11.17/Lib/ssl.py)を使用します。今回のPython基準とCA更新手順だけでは、この接続処理のリスクは解消しません。
+- **PyInstaller配布物**: ビルド元のPython・OpenSSL・依存関係を更新し、実行ファイルを再ビルドして差し替える必要があります。配布済みの実行ファイルは、利用者側のPythonや `uv.lock` の更新では更新されません。
+- **tarfile**: アプリには直接のtar展開処理がありません。2026-10-22修正の `tar_filter`（CVE-2026-114583）について、3.11.17で修正済みとは扱いません。インストール・ビルド時のアーカイブ処理は配布元の続報と更新を確認してください。
 
 ## セットアップ
 
