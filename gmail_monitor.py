@@ -5,6 +5,7 @@ from email.header import decode_header
 from email.utils import parsedate_to_datetime
 from datetime import datetime, timedelta, timezone
 import logging
+import ssl
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +28,9 @@ class GmailMonitor:
         
         try:
             logger.info(f"Gmailに接続中: {email_addr}")
-            self.imap = imaplib.IMAP4_SSL('imap.gmail.com', 993)
+            self.imap = imaplib.IMAP4_SSL(
+                'imap.gmail.com', 993, ssl_context=ssl.create_default_context()
+            )
             self.imap.login(email_addr, password)
             logger.info("Gmail接続成功")
             return True

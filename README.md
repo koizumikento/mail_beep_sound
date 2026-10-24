@@ -47,7 +47,7 @@ python -m pip install "pip @ https://files.pythonhosted.org/packages/3f/06/3e442
 
 - **CA証明書**: [certifiのemSignアドバイザリ](https://github.com/certifi/python-certifi/security/advisories/GHSA-6q48-6c7w-9gw2)と上記Python公式案内を確認してください。このアプリの依存関係・`uv.lock` にcertifiはありません。既にcertifiを使うインストーラーや別環境では `certifi>=2026.10.19` を確認し、pipに同梱されたcertifiもpipごと更新してください。アプリへのcertifi追加だけでは、標準ライブラリのIMAP接続には適用されません。
 - **OS・Python配布元**: OpenSSLと信頼するCA証明書の更新も別途必要です。macOSのpython.org配布版で `Install Certificates.command` を利用する場合も、pip・certifiとスクリプトが参照するCAを更新してください。OSのCAストアや独自のCA設定にも同じ更新確認が必要です。
-- **IMAPの残るリスク**: 現在は `imaplib.IMAP4_SSL` にSSLコンテキストを渡していません。[CPython 3.11の実装](https://github.com/python/cpython/blob/v3.11.17/Lib/imaplib.py)は、この場合に[証明書・ホスト名検証を無効にしたコンテキスト](https://github.com/python/cpython/blob/v3.11.17/Lib/ssl.py)を使用します。今回のPython基準とCA更新手順だけでは、この接続処理のリスクは解消しません。
+- **IMAPの証明書検証**: `imaplib.IMAP4_SSL` に [`ssl.create_default_context()`](https://docs.python.org/3.11/library/ssl.html#ssl.create_default_context) を明示的に渡し、信頼するCAによる証明書検証と `imap.gmail.com` のホスト名検証を行います。検証エラー時は接続に失敗し、検証を無効にした再接続は行いません。Python・OpenSSLの既定の信頼ストアを使うため、CA更新も必要です。
 - **PyInstaller配布物**: ビルド元のPython・OpenSSL・依存関係を更新し、実行ファイルを再ビルドして差し替える必要があります。配布済みの実行ファイルは、利用者側のPythonや `uv.lock` の更新では更新されません。
 - **tarfile**: アプリには直接のtar展開処理がありません。2026-10-22修正の `tar_filter`（CVE-2026-114583）について、3.11.17で修正済みとは扱いません。インストール・ビルド時のアーカイブ処理は配布元の続報と更新を確認してください。
 
@@ -429,6 +429,14 @@ beep_duration = 10
 
 - `pyinstaller`: スタンドアロン実行ファイルのビルド
 - `ruff`: リンター/フォーマッター
+
+### オフラインテスト
+
+```bash
+uv run python -m unittest discover -v
+```
+
+IMAP接続のテストはダミーの設定とモックだけを使用し、Gmail・実メール・認証情報へのアクセスを行いません。証明書・ホスト名検証の設定と、検証失敗時に認証や安全でない再接続を行わないことを確認します。
 
 ### プロジェクト構造
 
